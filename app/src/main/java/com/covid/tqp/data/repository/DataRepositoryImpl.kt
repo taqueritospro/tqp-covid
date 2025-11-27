@@ -1,15 +1,16 @@
 package com.covid.tqp.data.repository
 
+import com.covid.tqp.data.model.CovidDataResponse
 import com.covid.tqp.data.source.remote.RemoteDataSource
-import com.covid.tqp.domain.model.DomainModel
 import com.covid.tqp.domain.repository.DataRepository
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class DataRepositoryImpl(
+@Singleton
+class DataRepositoryImpl @Inject constructor(
     private val remoteDataSource: RemoteDataSource
 ) : DataRepository {
-    override suspend fun getData(): List<DomainModel> {
-        return remoteDataSource.getData().map { dataModel ->
-            DomainModel(dataModel.id, "name_from_data_model") // Simplified mapping
-        }
+    override suspend fun getCovidData(country: String?, date: String?): List<CovidDataResponse> {
+        return remoteDataSource.getCovidData(country = country, date = date)
     }
 }

@@ -1,12 +1,13 @@
 package com.covid.tqp.domain.usecase
 
-import com.covid.tqp.domain.model.DomainModel
+import com.covid.tqp.data.model.CovidDataResponse
 import com.covid.tqp.domain.repository.DataRepository
+import javax.inject.Inject
 
-class GetDataUseCase(
+class GetDataUseCase @Inject constructor(
     private val dataRepository: DataRepository
 ) {
-    suspend operator fun invoke(): List<DomainModel> {
-        return dataRepository.getData()
+    suspend operator fun invoke(country: String? = null, date: String? = null): List<CovidDataResponse> {
+        return dataRepository.getCovidData(country, date)
     }
 }

@@ -1,7 +1,7 @@
 package com.covid.tqp.domain.repository
 
-import com.covid.tqp.domain.model.DomainModel
+import com.covid.tqp.data.model.CovidDataResponse
 
 interface DataRepository {
-    suspend fun getData(): List<DomainModel>
+    suspend fun getCovidData(country: String? = null, date: String? = null): List<CovidDataResponse>
 }
