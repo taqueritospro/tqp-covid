@@ -47,7 +47,7 @@ fun MainScreen(
                     LazyVerticalGrid(columns = GridCells.Fixed(2), contentPadding = PaddingValues(8.dp)) {
                         items(viewModel.predefinedCountries.size) {
                             CountryCard(
-                                countryName = "Loading",
+                                countryName = "Cargando", // Texto temporal
                                 isLoading = true,
                                 onClick = { /* No clickeable mientras carga */ }
                             )
@@ -55,6 +55,11 @@ fun MainScreen(
                     }
                 }
                 is MainScreenUiState.Success -> {
+                    Text(
+                        text = "Selecciona un país para ver estadísticas",
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
                     val countries = (uiState as MainScreenUiState.Success).countries
                     LazyVerticalGrid(
                         columns = GridCells.Fixed(2),
