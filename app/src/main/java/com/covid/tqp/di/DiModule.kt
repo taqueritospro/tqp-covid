@@ -20,7 +20,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
 
-const val API_KEY = "TU_API_KEY_AQUI"
+const val API_KEY = "NwZTeoCbXfI1odM2m7c9Tw==iGrJdu4eP7xY6eQv"
 
 @Module
 @InstallIn(SingletonComponent::class)
