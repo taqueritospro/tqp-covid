@@ -4,9 +4,12 @@ import android.app.Application
 import dagger.hilt.android.HiltAndroidApp
 
 /**
- * Clase Application principal para la aplicación Covid-19.1
- * Esta clase está anotada con [HiltAndroidApp] para habilitar la inyección de dependencias con Hilt.
- * Debe registrarse en AndroidManifest.xml (`android:name=".TqpApplication"`).
+ * Clase [Application] base para la aplicación.
+ *
+ * Anotada con [HiltAndroidApp], esta clase inicializa Hilt para la inyección de dependencias
+ * en toda la aplicación. Es el punto de entrada para el grafo de dependencias de la aplicación.
+ *
+ * Esta clase debe estar declarada en el `AndroidManifest.xml`.
  */
 @HiltAndroidApp
 class TqpApplication : Application()

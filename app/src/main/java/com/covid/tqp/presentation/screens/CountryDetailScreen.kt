@@ -57,6 +57,16 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import kotlinx.coroutines.launch
 
+/**
+ * Composable que representa la pantalla de detalles de un país específico.
+ *
+ * Muestra las estadísticas de COVID (casos totales, nuevos casos, muertes totales, nuevas muertes)
+ * para una fecha seleccionada. Permite al usuario cambiar la fecha utilizando un [DatePicker].
+ * El estado es proporcionado por [CountryDetailViewModel].
+ *
+ * @param navController Controlador de navegación para acciones como volver a la pantalla anterior.
+ * @param viewModel Instancia de [CountryDetailViewModel] inyectada por Hilt.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CountryDetailScreen(
@@ -87,74 +97,59 @@ fun CountryDetailScreen(
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            if (uiState.isLoading) {
-                CircularProgressIndicator(modifier = Modifier.size(64.dp))
-                Text("Cargando datos...")
-            } else if (uiState.error != null) {
-                Text(
-                    text = "Error: ${uiState.error}",
-                    color = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.padding(bottom = 16.dp)
-                )
-            } else {
-                // Selector de fecha
-                DateSelector(
-                    selectedDate = uiState.selectedDate,
-                    availableDates = viewModel.uiState.value.availableDates,
-                    onDateSelected = { newDate ->
-                        viewModel.onDateSelected(newDate)
-                    },
-                    onInvalidDateSelected = {
-                        coroutineScope.launch {
-                            snackbarHostState.showSnackbar("No hay datos disponibles para la fecha seleccionada.")
-                        }
-                    }
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-
-                uiState.dataForSelectedDate?.let { data ->
-                    LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        item {
-                            DataCard(
-                                icon = Icons.Default.Coronavirus,
-                                label = "Total Casos",
-                                value = data.totalCases.toString()
-                            )
-                        }
-                        item {
-                            DataCard(
-                                icon = Icons.Default.Cases,
-                                label = "Nuevos Casos",
-                                value = data.newCases.toString()
-                            )
-                        }
-                        item {
-                            DataCard(
-                                icon = Icons.Default.LocalHospital,
-                                label = "Total Muertes",
-                                value = data.totalDeaths.toString()
-                            )
-                        }
-                        item {
-                            DataCard(
-                                icon = Icons.Default.DateRange,
-                                label = "Nuevas Muertes",
-                                value = data.newDeaths.toString()
-                            )
-                        }
-                    }
-                } ?: run {
+            when {
+                uiState.isLoading -> {
+                    CircularProgressIndicator(modifier = Modifier.size(64.dp))
+                    Text("Cargando datos...", modifier = Modifier.padding(top = 16.dp))
+                }
+                uiState.error != null -> {
                     Text(
-                        text = "No hay datos disponibles para la fecha seleccionada: ${uiState.selectedDate.format(DateTimeFormatter.ISO_DATE)}",
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.padding(16.dp)
+                        text = "Error: ${uiState.error}",
+                        color = MaterialTheme.colorScheme.error
                     )
+                }
+                else -> {
+                    // Componente para seleccionar la fecha.
+                    DateSelector(
+                        selectedDate = uiState.selectedDate,
+                        availableDates = uiState.availableDates,
+                        onDateSelected = viewModel::onDateSelected,
+                        onInvalidDateSelected = {
+                            coroutineScope.launch {
+                                snackbarHostState.showSnackbar("No hay datos disponibles para la fecha seleccionada.")
+                            }
+                        }
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Muestra las tarjetas de datos o un mensaje si no hay datos.
+                    uiState.dataForSelectedDate?.let { data ->
+                        LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            item { DataCard(icon = Icons.Default.Coronavirus, label = "Total Casos", value = data.totalCases.toString()) }
+                            item { DataCard(icon = Icons.Default.Cases, label = "Nuevos Casos", value = data.newCases.toString()) }
+                            item { DataCard(icon = Icons.Default.LocalHospital, label = "Total Muertes", value = data.totalDeaths.toString()) }
+                            item { DataCard(icon = Icons.Default.DateRange, label = "Nuevas Muertes", value = data.newDeaths.toString()) }
+                        }
+                    } ?: run {
+                        Text(
+                            text = "No hay datos para: ${uiState.selectedDate.format(DateTimeFormatter.ISO_DATE)}",
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.padding(16.dp)
+                        )
+                    }
                 }
             }
         }
     }
 }
 
+/**
+ * Un Composable reutilizable para mostrar una pieza de información estadística.
+ *
+ * @param icon El [ImageVector] que se mostrará junto a la etiqueta.
+ * @param label El texto descriptivo para el dato.
+ * @param value El valor numérico del dato, como [String].
+ */
 @Composable
 fun DataCard(
     icon: ImageVector,
@@ -162,41 +157,32 @@ fun DataCard(
     value: String
 ) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .heightIn(min = 80.dp),
+        modifier = Modifier.fillMaxWidth().heightIn(min = 80.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
+            modifier = Modifier.fillMaxSize().padding(16.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = label,
-                    modifier = Modifier.size(32.dp),
-                    tint = MaterialTheme.colorScheme.primary
-                )
+                Icon(imageVector = icon, contentDescription = label, modifier = Modifier.size(32.dp), tint = MaterialTheme.colorScheme.primary)
                 Spacer(modifier = Modifier.width(16.dp))
-                Text(
-                    text = label,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
+                Text(text = label, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
             }
-            Text(
-                text = value,
-                style = MaterialTheme.typography.headlineSmall,
-                color = MaterialTheme.colorScheme.secondary
-            )
+            Text(text = value, style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.secondary)
         }
     }
 }
 
+/**
+ * Un Composable que encapsula la lógica para mostrar un botón que abre un [DatePickerDialog].
+ *
+ * @param selectedDate La fecha actualmente seleccionada.
+ * @param availableDates Un conjunto de fechas válidas que el usuario puede seleccionar.
+ * @param onDateSelected Callback que se invoca cuando el usuario confirma una fecha válida.
+ * @param onInvalidDateSelected Callback que se invoca si el usuario selecciona una fecha sin datos disponibles.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DateSelector(
@@ -222,25 +208,18 @@ fun DateSelector(
             confirmButton = {
                 TextButton(onClick = {
                     datePickerState.selectedDateMillis?.let { millis ->
-                        val newDate = Instant.ofEpochMilli(millis)
-                            .atZone(ZoneId.systemDefault())
-                            .toLocalDate()
+                        val newDate = Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalDate()
                         if (availableDates.contains(newDate)) {
                             onDateSelected(newDate)
-                            showDatePicker = false
                         } else {
                             onInvalidDateSelected()
-                            showDatePicker = false
                         }
                     }
-                }) {
-                    Text("Aceptar")
-                }
+                    showDatePicker = false
+                }) { Text("Aceptar") }
             },
             dismissButton = {
-                TextButton(onClick = { showDatePicker = false }) {
-                    Text("Cancelar")
-                }
+                TextButton(onClick = { showDatePicker = false }) { Text("Cancelar") }
             }
         ) {
             DatePicker(state = datePickerState)

@@ -19,20 +19,32 @@ import com.covid.tqp.presentation.components.CountryCard
 import com.covid.tqp.presentation.viewmodel.MainScreenUiState
 import com.covid.tqp.presentation.viewmodel.MainViewModel
 
+/**
+ * Composable que representa la pantalla principal de la aplicación.
+ *
+ * Muestra una cuadrícula de países predefinidos. El estado de la UI (carga, éxito, error)
+ * es gestionado por el [MainViewModel]. Incluye un botón de acción flotante (FAB)
+ * para navegar a la pantalla de búsqueda.
+ *
+ * @param navController El controlador de navegación para manejar las acciones de navegación.
+ * @param viewModel La instancia de [MainViewModel] inyectada por Hilt, que proporciona el estado y la lógica de la pantalla.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
     navController: NavController,
     viewModel: MainViewModel = hiltViewModel()
 ) {
+    // Recolecta el estado de la UI del ViewModel como un State de Compose.
     val uiState by viewModel.uiState.collectAsState()
 
     Scaffold(
         floatingActionButton = {
+            // Botón de Acción Flotante para navegar a la pantalla de búsqueda.
             FloatingActionButton(onClick = {
                 navController.navigate(AppDestinations.SEARCH_ROUTE)
             }) {
-                Icon(Icons.Default.Search, "Buscar país")
+                Icon(Icons.Default.Search, contentDescription = "Buscar país")
             }
         }
     ) { innerPadding ->
@@ -42,37 +54,39 @@ fun MainScreen(
                 .padding(innerPadding)
                 .padding(horizontal = 8.dp, vertical = 16.dp)
         ) {
-            when (uiState) {
+            // Renderiza la UI en función del estado actual (when-expression).
+            when (val state = uiState) {
                 is MainScreenUiState.Loading -> {
-                    // Muestra shimmers con GridCells.Adaptive
+                    // Muestra una cuadrícula de tarjetas con efecto shimmer mientras carga.
                     LazyVerticalGrid(columns = GridCells.Adaptive(minSize = 150.dp), contentPadding = PaddingValues(8.dp)) {
                         items(viewModel.predefinedCountries.size) {
                             CountryCard(
-                                countryName = "Cargando", // Texto temporal
+                                countryName = "Cargando...",
                                 isLoading = true,
-                                onClick = { /* No clickeable mientras carga */ }
+                                onClick = { /* No-op */ }
                             )
                         }
                     }
                 }
                 is MainScreenUiState.Success -> {
+                    // Muestra la lista de países cuando los datos se cargan correctamente.
                     Text(
                         text = "Selecciona un país para ver estadísticas",
                         style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.padding(bottom = 16.dp)
+                        modifier = Modifier.padding(bottom = 16.dp, start = 8.dp)
                     )
-                    val countries = (uiState as MainScreenUiState.Success).countries
                     LazyVerticalGrid(
-                        columns = GridCells.Adaptive(minSize = 150.dp), // Cuadrícula adaptable
+                        columns = GridCells.Adaptive(minSize = 150.dp),
                         contentPadding = PaddingValues(8.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        items(countries) { countryUiState ->
+                        items(state.countries) { countryUiState ->
                             CountryCard(
                                 countryName = countryUiState.countryName,
                                 isLoading = countryUiState.isLoading,
                                 onClick = {
+                                    // Navega a la pantalla de detalle del país al hacer clic.
                                     navController.navigate(
                                         "${AppDestinations.COUNTRY_DETAIL_ROUTE}/${countryUiState.countryName}"
                                     )
@@ -82,8 +96,12 @@ fun MainScreen(
                     }
                 }
                 is MainScreenUiState.Error -> {
-                    val errorMessage = (uiState as MainScreenUiState.Error).message
-                    Text("Error: $errorMessage", color = MaterialTheme.colorScheme.error)
+                    // Muestra un mensaje de error si la carga falla.
+                    Text(
+                        text = "Error: ${state.message}",
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.padding(16.dp)
+                    )
                 }
             }
         }

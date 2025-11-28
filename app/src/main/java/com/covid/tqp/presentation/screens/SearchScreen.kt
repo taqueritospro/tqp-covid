@@ -23,7 +23,17 @@ import com.covid.tqp.navigation.AppDestinations
 import com.covid.tqp.presentation.viewmodel.SearchUiState
 import com.covid.tqp.presentation.viewmodel.SearchViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
+/**
+ * Composable que representa la pantalla de búsqueda de países.
+ *
+ * Permite al usuario introducir el nombre de un país en un campo de texto y ejecutar una búsqueda.
+ * Muestra diferentes estados de la UI (inactivo, cargando, éxito, error) basados en el [SearchUiState]
+ * proporcionado por el [SearchViewModel].
+ *
+ * @param navController El controlador de navegación para manejar acciones como volver atrás o navegar a la pantalla de detalles.
+ * @param viewModel La instancia de [SearchViewModel] inyectada por Hilt.
+ */
+@OptIn(ExperimentalMaterial3Api::class, androidx.compose.ui.ExperimentalComposeUiApi::class)
 @Composable
 fun SearchScreen(
     navController: NavController,
@@ -53,9 +63,10 @@ fun SearchScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
         ) {
+            // Campo de texto para la búsqueda.
             OutlinedTextField(
                 value = searchQuery,
-                onValueChange = { viewModel.onSearchQueryChanged(it) },
+                onValueChange = viewModel::onSearchQueryChanged,
                 label = { Text("Nombre del País") },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
@@ -75,47 +86,49 @@ fun SearchScreen(
             )
             Spacer(modifier = Modifier.height(16.dp))
 
-            when (searchUiState) {
+            // Renderiza la UI según el estado de la búsqueda.
+            when (val state = searchUiState) {
                 is SearchUiState.Idle -> {
                     Text("Introduce un país para buscar.", style = MaterialTheme.typography.bodyMedium)
                 }
                 is SearchUiState.Loading -> {
                     CircularProgressIndicator(modifier = Modifier.size(48.dp))
-                    Text("Buscando país...")
+                    Text("Buscando país...", modifier = Modifier.padding(top = 8.dp))
                 }
                 is SearchUiState.Success -> {
-                    val countryName = (searchUiState as SearchUiState.Success).countryName
+                    // Muestra un mensaje de éxito y un botón para ver los detalles.
                     Text(
-                        text = "País " + countryName + " encontrado con éxito!",
-                        color = Color.Green.copy(alpha = 0.8f),
+                        text = "País \"${state.countryName}\" encontrado con éxito!",
+                        color = MaterialTheme.colorScheme.primary,
                         style = MaterialTheme.typography.bodyLarge,
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
                     Button(onClick = {
-                        navController.navigate(
-                            "${AppDestinations.COUNTRY_DETAIL_ROUTE}/${countryName}"
-                        )
-                        viewModel.resetSearchState() // Reiniciar estado después de navegar
+                        navController.navigate("${AppDestinations.COUNTRY_DETAIL_ROUTE}/${state.countryName}")
+                        viewModel.resetSearchState() // Reinicia el estado después de navegar.
                     }) {
                         Text("Ver Detalles")
                     }
                 }
                 is SearchUiState.Error -> {
-                    val errorMessage = (searchUiState as SearchUiState.Error).message
+                    // Muestra un mensaje de error y un botón para reintentar.
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(Color.Red.copy(alpha = 0.2f))
-                            .padding(8.dp),
+                            .background(MaterialTheme.colorScheme.errorContainer, shape = MaterialTheme.shapes.medium)
+                            .padding(16.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = errorMessage,
-                            color = MaterialTheme.colorScheme.error,
+                            text = state.message,
+                            color = MaterialTheme.colorScheme.onErrorContainer,
                             style = MaterialTheme.typography.bodyMedium
                         )
                         Spacer(modifier = Modifier.height(8.dp))
-                        Button(onClick = { viewModel.searchCountry() }) {
+                        Button(
+                            onClick = { viewModel.searchCountry() },
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                        ) {
                             Text("Reintentar")
                         }
                     }
