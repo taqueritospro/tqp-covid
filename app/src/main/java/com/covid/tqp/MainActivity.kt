@@ -12,10 +12,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.covid.tqp.navigation.AppDestinations
-import com.covid.tqp.presentation.screens.CountryDetailScreen
-import com.covid.tqp.presentation.screens.MainScreen
-import com.covid.tqp.presentation.screens.SearchScreen
-import com.covid.tqp.presentation.screens.SplashScreen
+import com.covid.tqp.presentation.screens.*
 import com.covid.tqp.ui.theme.ExamenArgumentativoTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -77,6 +74,12 @@ fun CovidAppNavHost() {
         }
         composable(AppDestinations.COUNTRY_DETAIL_FULL_ROUTE) {
             CountryDetailScreen(navController = navController)
+        }
+        composable(AppDestinations.COUNTRY_SELECTION_ROUTE) {
+            CountrySelectionScreen(navController = navController)
+        }
+        composable(AppDestinations.COMPARISON_FULL_ROUTE) {
+            ComparisonScreen(navController = navController)
         }
     }
 }

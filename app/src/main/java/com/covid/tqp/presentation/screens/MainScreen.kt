@@ -5,6 +5,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -23,8 +24,8 @@ import com.covid.tqp.presentation.viewmodel.MainViewModel
  * Composable que representa la pantalla principal de la aplicación.
  *
  * Muestra una cuadrícula de países predefinidos. El estado de la UI (carga, éxito, error)
- * es gestionado por el [MainViewModel]. Incluye un botón de acción flotante (FAB)
- * para navegar a la pantalla de búsqueda.
+ * es gestionado por el [MainViewModel]. Incluye botones de acción flotante (FAB)
+ * para buscar y comparar países.
  *
  * @param navController El controlador de navegación para manejar las acciones de navegación.
  * @param viewModel La instancia de [MainViewModel] inyectada por Hilt, que proporciona el estado y la lógica de la pantalla.
@@ -40,11 +41,18 @@ fun MainScreen(
 
     Scaffold(
         floatingActionButton = {
-            // Botón de Acción Flotante para navegar a la pantalla de búsqueda.
-            FloatingActionButton(onClick = {
-                navController.navigate(AppDestinations.SEARCH_ROUTE)
-            }) {
-                Icon(Icons.Default.Search, contentDescription = "Buscar país")
+            Row {
+                FloatingActionButton(
+                    onClick = { navController.navigate(AppDestinations.SEARCH_ROUTE) },
+                    modifier = Modifier.padding(end = 8.dp)
+                ) {
+                    Icon(Icons.Default.Search, contentDescription = "Buscar país")
+                }
+                FloatingActionButton(
+                    onClick = { navController.navigate(AppDestinations.COUNTRY_SELECTION_ROUTE) },
+                ) {
+                    Icon(Icons.Default.BarChart, contentDescription = "Comparar países")
+                }
             }
         }
     ) { innerPadding ->
