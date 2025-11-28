@@ -1,10 +1,13 @@
 package com.covid.tqp.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
@@ -12,10 +15,12 @@ import javax.inject.Inject
  *
  * @property countries La lista de todos los países disponibles para la selección.
  * @property selectedCountries El conjunto de países que el usuario ha seleccionado.
+ * @property isLoading `true` si la lista de países se está cargando.
  */
 data class CountrySelectionUiState(
     val countries: List<String> = emptyList(),
-    val selectedCountries: Set<String> = emptySet()
+    val selectedCountries: Set<String> = emptySet(),
+    val isLoading: Boolean = true
 )
 
 /**
@@ -29,7 +34,7 @@ class CountrySelectionViewModel @Inject constructor() : ViewModel() {
     private val _uiState = MutableStateFlow(CountrySelectionUiState())
     val uiState = _uiState.asStateFlow()
 
-    // Lista de países hardcodeada para simplificar. En una app real, vendría de un repositorio.
+    // Lista de países hardcodeada para simplificar.
     private val allCountries = listOf(
         "Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Argentina", "Australia", "Austria", "Bahamas", "Bangladesh",
         "Belarus", "Belgium", "Bolivia", "Brazil", "Bulgaria", "Cambodia", "Cameroon", "Canada", "Chile", "China", "Colombia",
@@ -44,7 +49,22 @@ class CountrySelectionViewModel @Inject constructor() : ViewModel() {
     )
 
     init {
-        _uiState.value = CountrySelectionUiState(countries = allCountries.sorted())
+        loadCountries()
+    }
+
+    /**
+     * Simula la carga asíncrona de la lista de países para evitar bloquear la UI.
+     */
+    private fun loadCountries() {
+        viewModelScope.launch {
+            delay(500) // Simula una pequeña demora de red o procesamiento.
+            _uiState.update {
+                it.copy(
+                    countries = allCountries.sorted(),
+                    isLoading = false
+                )
+            }
+        }
     }
 
     /**

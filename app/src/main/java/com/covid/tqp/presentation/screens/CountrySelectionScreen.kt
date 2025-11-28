@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.CompareArrows
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -53,23 +54,34 @@ fun CountrySelectionScreen(
                         val selectedCountriesStr = selectedCountries.joinToString(",")
                         navController.navigate("${AppDestinations.COMPARISON_ROUTE}/$selectedCountriesStr")
                     },
-                    icon = { Icon(Icons.Default.ArrowBack, contentDescription = "") },
+                    icon = { Icon(Icons.Default.CompareArrows, contentDescription = "Comparar") },
                     text = { Text("Comparar (${selectedCountries.size})") }
                 )
             }
         }
     ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
-            items(uiState.countries) { countryName ->
-                CountrySelectItem(
-                    countryName = countryName,
-                    isSelected = selectedCountries.contains(countryName),
-                    onToggle = { viewModel.toggleCountrySelection(countryName) }
-                )
+        if (uiState.isLoading) {
+            // Muestra un indicador de carga centrado.
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        } else {
+            // Muestra la lista de países una vez cargada.
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+            ) {
+                items(uiState.countries) { countryName ->
+                    CountrySelectItem(
+                        countryName = countryName,
+                        isSelected = selectedCountries.contains(countryName),
+                        onToggle = { viewModel.toggleCountrySelection(countryName) }
+                    )
+                }
             }
         }
     }

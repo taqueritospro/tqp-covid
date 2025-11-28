@@ -6,9 +6,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
@@ -17,6 +15,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.covid.tqp.presentation.viewmodel.ComparisonCountryData
 import com.covid.tqp.presentation.viewmodel.ComparisonViewModel
+import com.covid.tqp.presentation.viewmodel.DailyDataSummary
 
 /**
  * Pantalla que muestra una comparación lado a lado de las estadísticas de COVID
@@ -32,9 +31,11 @@ fun ComparisonScreen(
     viewModel: ComparisonViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val comparisonData = uiState.comparisonData
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text("Comparación de Países") },
@@ -46,16 +47,36 @@ fun ComparisonScreen(
             )
         }
     ) { paddingValues ->
-        // LazyRow permite el desplazamiento horizontal si hay muchos países.
-        LazyRow(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(top = 16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            items(comparisonData.values.toList()) { countryData ->
-                ComparisonCard(data = countryData)
+            // Solo muestra el selector de fecha si hay fechas disponibles.
+            if (uiState.availableDates.isNotEmpty()) {
+                DateSelector(
+                    selectedDate = uiState.selectedDate,
+                    availableDates = uiState.availableDates,
+                    onDateSelected = viewModel::onDateSelected,
+                    onInvalidDateSelected = {
+                        // Aquí podrías mostrar un Snackbar si el usuario selecciona una fecha sin datos.
+                    }
+                )
+            }
+
+            // LazyRow permite el desplazamiento horizontal si hay muchos países.
+            LazyRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
+                contentPadding = PaddingValues(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                items(uiState.comparisonData.values.toList()) { countryData ->
+                    ComparisonCard(data = countryData)
+                }
             }
         }
     }
@@ -69,12 +90,14 @@ fun ComparisonScreen(
 @Composable
 private fun ComparisonCard(data: ComparisonCountryData) {
     Card(
-        modifier = Modifier.width(200.dp),
+        modifier = Modifier
+            .width(250.dp) // Ancho aumentado para más datos
+            .fillMaxHeight(),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(
             modifier = Modifier
-                .fillMaxHeight()
+                .fillMaxSize()
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -87,16 +110,18 @@ private fun ComparisonCard(data: ComparisonCountryData) {
 
             if (data.isLoading) {
                 CircularProgressIndicator()
-            } else if (data.data != null) {
-                // Para simplificar, mostramos el total del último día disponible.
-                val latestCases = data.data.cases?.values?.firstOrNull()?.total ?: 0
-                val latestDeaths = data.data.deaths?.values?.firstOrNull()?.total ?: 0
-
-                ComparisonStat(label = "Total Casos", value = latestCases.toString())
+            } else if (data.dataForSelectedDate != null) {
+                // Muestra las estadísticas para la fecha seleccionada.
+                val stats = data.dataForSelectedDate
+                ComparisonStat(label = "Total Casos", value = stats.totalCases.toString())
+                ComparisonStat(label = "Nuevos Casos", value = stats.newCases.toString())
                 Spacer(Modifier.height(12.dp))
-                ComparisonStat(label = "Total Muertes", value = latestDeaths.toString())
+                Divider(modifier = Modifier.padding(horizontal = 8.dp))
+                Spacer(Modifier.height(12.dp))
+                ComparisonStat(label = "Total Muertes", value = stats.totalDeaths.toString())
+                ComparisonStat(label = "Nuevas Muertes", value = stats.newDeaths.toString())
             } else {
-                Text("Datos no disponibles", textAlign = TextAlign.Center)
+                Text("Sin datos para esta fecha", textAlign = TextAlign.Center, modifier = Modifier.padding(8.dp))
             }
         }
     }
@@ -107,7 +132,10 @@ private fun ComparisonCard(data: ComparisonCountryData) {
  */
 @Composable
 private fun ComparisonStat(label: String, value: String) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
         Text(text = label, style = MaterialTheme.typography.titleMedium)
         Text(text = value, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.primary)
     }
