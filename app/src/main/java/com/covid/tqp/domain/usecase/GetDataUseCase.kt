@@ -7,7 +7,7 @@ import javax.inject.Inject
 class GetDataUseCase @Inject constructor(
     private val dataRepository: DataRepository
 ) {
-    suspend operator fun invoke(country: String? = null, date: String? = null): List<CovidDataResponse> {
-        return dataRepository.getCovidData(country, date)
+    suspend operator fun invoke(country: String? = null, date: String? = null, type: String? = null): List<CovidDataResponse> {
+        return dataRepository.getCovidData(country, date, type)
     }
 }
