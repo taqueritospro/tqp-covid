@@ -38,4 +38,25 @@ object AppDestinations {
      * Ejemplo de uso: `navController.navigate("$COUNTRY_DETAIL_ROUTE/Mexico")`
      */
     const val COUNTRY_DETAIL_FULL_ROUTE = "$COUNTRY_DETAIL_ROUTE/{$COUNTRY_DETAIL_ARGUMENT}"
+
+    /**
+     * Ruta de navegación para la pantalla de selección de países para comparar.
+     */
+    const val COUNTRY_SELECTION_ROUTE = "country_selection_route"
+
+    /**
+     * Ruta base para la pantalla de comparación de estadísticas.
+     */
+    const val COMPARISON_ROUTE = "comparison_route"
+
+    /**
+     * Nombre de la clave del argumento utilizado para pasar la lista de países a [ComparisonScreen].
+     * Los países se pasarán como una cadena separada por comas.
+     */
+    const val COMPARISON_ARGUMENT = "countries"
+
+    /**
+     * Ruta completa para la pantalla de comparación, incluyendo el argumento de los países.
+     */
+    const val COMPARISON_FULL_ROUTE = "$COMPARISON_ROUTE/{$COMPARISON_ARGUMENT}"
 }
