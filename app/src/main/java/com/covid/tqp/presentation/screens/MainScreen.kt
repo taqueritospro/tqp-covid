@@ -44,7 +44,8 @@ fun MainScreen(
         ) {
             when (uiState) {
                 is MainScreenUiState.Loading -> {
-                    LazyVerticalGrid(columns = GridCells.Fixed(2), contentPadding = PaddingValues(8.dp)) {
+                    // Muestra shimmers con GridCells.Adaptive
+                    LazyVerticalGrid(columns = GridCells.Adaptive(minSize = 150.dp), contentPadding = PaddingValues(8.dp)) {
                         items(viewModel.predefinedCountries.size) {
                             CountryCard(
                                 countryName = "Cargando", // Texto temporal
@@ -62,7 +63,7 @@ fun MainScreen(
                     )
                     val countries = (uiState as MainScreenUiState.Success).countries
                     LazyVerticalGrid(
-                        columns = GridCells.Fixed(2),
+                        columns = GridCells.Adaptive(minSize = 150.dp), // Cuadrícula adaptable
                         contentPadding = PaddingValues(8.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
