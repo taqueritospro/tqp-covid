@@ -10,7 +10,7 @@ import javax.inject.Singleton
 class DataRepositoryImpl @Inject constructor(
     private val remoteDataSource: RemoteDataSource
 ) : DataRepository {
-    override suspend fun getCovidData(country: String?, date: String?): List<CovidDataResponse> {
-        return remoteDataSource.getCovidData(country = country, date = date)
+    override suspend fun getCovidData(country: String?, date: String?, type: String?): List<CovidDataResponse> {
+        return remoteDataSource.getCovidData(country = country, date = date, type = type)
     }
 }

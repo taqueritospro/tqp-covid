@@ -25,7 +25,7 @@ fun CountryCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(120.dp)
+            .height(100.dp) // Altura reducida
             .clickable(enabled = !isLoading, onClick = onClick),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
@@ -48,13 +48,13 @@ fun CountryCard(
                 Icon(
                     imageVector = Icons.Default.Public,
                     contentDescription = "Flag of $countryName",
-                    modifier = Modifier.size(48.dp),
+                    modifier = Modifier.size(40.dp), // Reducir un poco el tamaño del icono
                     tint = MaterialTheme.colorScheme.primary
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(4.dp)) // Reducir el espacio
                 Text(
                     text = countryName,
-                    style = MaterialTheme.typography.titleMedium
+                    style = MaterialTheme.typography.titleSmall // Usar estilo más pequeño
                 )
             }
         }
