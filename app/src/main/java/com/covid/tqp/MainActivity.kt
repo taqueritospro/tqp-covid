@@ -16,7 +16,7 @@ import com.covid.tqp.presentation.screens.CountryDetailScreen
 import com.covid.tqp.presentation.screens.MainScreen
 import com.covid.tqp.presentation.screens.SearchScreen
 import com.covid.tqp.presentation.screens.SplashScreen
-import com.covid.tqp.presentation.theme.ExamenArgumentativoTheme
+import com.covid.tqp.ui.theme.ExamenArgumentativoTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 /**
